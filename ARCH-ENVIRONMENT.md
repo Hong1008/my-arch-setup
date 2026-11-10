@@ -879,6 +879,11 @@ nmcli device
 - fwupd / fstrim / zram / firewalld / time sync / mirror 유지관리 구성
 - 백업 아키텍처 설계
 
+## 2026-11
+
+- 개인 작업 경로 정리: `arch-setup` 저장소를 `~/workspace/projects/arch-setup`으로 이동
+- OS 설정은 변경하지 않음
+
 ---
 
 # 18. 현재 미완료 / 다음 우선순위
