@@ -533,35 +533,36 @@ Rust
 
 ## 12.1 dotfiles
 
-목표 구조:
+현재 구성:
 
 ```text
-GitHub
-└── dotfiles
-    ├── .zshrc
-    ├── .gitconfig
-    └── .config/
-        ├── nvim/
-        └── tmux/
+bare repository: ~/.local/share/dotfiles.git
+work tree:       $HOME
 ```
 
-로컬 bare repository 방식:
+`~/.zshrc`의 `dot` 별칭은 위 bare repository를 `$HOME` work tree로 사용한다.
 
 ```text
-~/.local/share/dotfiles.git/
-```
-
-alias:
-
-```bash
 alias dot='git --git-dir=$HOME/.local/share/dotfiles.git --work-tree=$HOME'
 ```
+
+현재 추적 파일:
+
+```text
+.zshrc
+.gitconfig
+.config/nvim/init.lua
+.config/tmux/tmux.conf
+```
+
+2026-11-10 기준으로 이 네 파일은 로컬 dotfiles 저장소와 일치한다. `.bashrc`는 저장소에서 관리하지 않는다. `origin`과 upstream 추적은 설정되어 있다.
 
 원칙:
 
 - 설정 파일만 저장
 - private key는 저장하지 않음
-- 공개 가능하면 public repo도 가능하지만 초기에는 private repo 권장
+- `~/.ssh/id_ed25519`, age private key 및 인증 정보는 저장하지 않음
+- push 전 변경 파일과 저장소 공개 범위를 확인
 
 ## 12.2 arch-setup
 
@@ -592,25 +593,19 @@ pacman -Qqdt  > packages/orphans.txt
 
 ## 12.3 secrets
 
-구조:
+현재 구성:
 
 ```text
-GitHub
-└── secrets (private)
-    ├── .sops.yaml
-    └── *.sops.*
+로컬 저장소: ~/secrets (directory mode 0700)
+Git remote:  origin (main은 origin/main 추적)
+암호화 도구: SOPS + age
 ```
 
-암호화:
+현재 Git 추적 파일은 `.gitignore`와 `.sops.yaml`뿐이며, SOPS 암호문은 아직 없다. `.sops.yaml`에는 age 공개 수신자 설정이 있지만, 공개 수신자 값은 이 문서에 복사하지 않는다. `.gitignore`는 기본적으로 파일을 무시하고 저장소 메타데이터와 `*.sops.yaml`, `*.sops.yml`, `*.sops.json`, `*.sops.env`, `*.sops.ini`만 허용한다. 로컬 키와 평문 내보내기 파일은 커밋하지 않는다.
 
 ```text
-SOPS + age
-```
-
-age private key:
-
-```text
-~/.config/sops/age/keys.txt
+~/.config/sops/age/keys.txt  # age private identity; mode 0600
+~/.ssh/id_ed25519           # SSH private key; mode 0600
 ```
 
 ### 절대 Git에 넣지 않는 것
@@ -620,7 +615,7 @@ age private key:
 ~/.ssh/id_ed25519
 ```
 
-age private key는 오프라인 recovery copy도 별도로 보관한다.
+age private key는 Git 저장소 밖에 둔다. 오프라인 recovery copy는 아직 준비되지 않았다. 비밀 파일을 커밋하기 전에는 SOPS 암호화 여부와 복호화 복구 절차를 시험한다.
 
 ## 12.4 Actual data
 
@@ -882,7 +877,10 @@ nmcli device
 ## 2026-11
 
 - 개인 작업 경로 정리: `arch-setup` 저장소를 `~/workspace/projects/arch-setup`으로 이동
-- OS 설정은 변경하지 않음
+- `~/workspace/notes/IDEA.md`와 비어 있던 `notes/` 폴더 제거
+- dotfiles와 secrets 저장소의 실제 위치, 추적 범위 및 키 분리 원칙을 문서화
+- 사용자 비밀 파일 및 secrets 저장소 디렉터리 권한을 제한
+- 시스템 패키지/서비스 설정은 변경하지 않음
 
 ---
 
@@ -890,9 +888,10 @@ nmcli device
 
 ## Backup
 
-- [ ] dotfiles 실제 GitHub remote 연결/확인
-- [ ] arch-setup GitHub remote 연결/확인
-- [ ] SOPS + age 실제 secret file 생성
+- [x] dotfiles Git remote/upstream 설정 확인
+- [x] arch-setup Git remote/upstream 설정 확인
+- [x] SOPS + age 저장소 설정 및 키 파일 위치 확인
+- [ ] SOPS 암호화 secret file 생성 및 복호화/복구 시험
 - [ ] age recovery key 오프라인 백업
 - [ ] restic repository 생성
 - [ ] restic 첫 백업
